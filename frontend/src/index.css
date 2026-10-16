@@ -1,0 +1,48 @@
+:root {
+  font-family: Inter, system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: #f4f6f8;
+}
+
+#root {
+  display: flex;
+  justify-content: center;
+}
+
+.container {
+  width: min(900px, 100%);
+  padding: 24px;
+}
+
+.card {
+  background: #fff;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+form {
+  display: grid;
+  gap: 8px;
+}
+
+input,
+textarea,
+button {
+  font: inherit;
+  padding: 8px;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+article {
+  border-top: 1px solid #d7dce2;
+  margin-top: 10px;
+  padding-top: 10px;
+}
