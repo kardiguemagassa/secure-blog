@@ -14,6 +14,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.server.ResponseStatusException;
 
+import com.kmgtechnologies.secureblog.dto.LoginRequest;
+import com.kmgtechnologies.secureblog.dto.AuthResponse;
+import java.util.Optional;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -26,6 +30,9 @@ class UserServiceTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private JwtService jwtService;
 
     @InjectMocks
     private UserService userService;
@@ -83,5 +90,41 @@ class UserServiceTest {
 
         verify(userRepository, never()).save(any(User.class));
         verifyNoInteractions(passwordEncoder);
+    }
+
+    @Test
+    void shouldLoginSuccessfully() {
+        LoginRequest request = new LoginRequest("alice@example.com", "TestPassword123!");
+
+        User user = new User("alice", "alice@example.com", "hashed-password");
+
+        when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(user));
+
+        when(passwordEncoder.matches(request.password(), user.getPassword())).thenReturn(true);
+
+        when(jwtService.generateToken(user)).thenReturn("test-jwt-token");
+
+        AuthResponse response = userService.login(request);
+
+        assertEquals("test-jwt-token", response.accessToken());
+        assertEquals("Bearer", response.tokenType());
+
+        verify(jwtService).generateToken(user);
+    }
+
+    @Test
+    void shouldRejectLoginWithInvalidPassword() {
+        LoginRequest request = new LoginRequest("alice@example.com", "wrongpassword");
+
+        User user = new User("alice", "alice@example.com", "hashed-password");
+
+        when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(user));
+
+        when(passwordEncoder.matches(request.password(), user.getPassword())).thenReturn(false);
+
+        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> userService.login(request));
+
+        assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
+        verifyNoInteractions(jwtService);
     }
 }
