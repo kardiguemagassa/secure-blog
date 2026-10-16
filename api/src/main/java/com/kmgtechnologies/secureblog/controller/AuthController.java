@@ -1,5 +1,7 @@
 package com.kmgtechnologies.secureblog.controller;
 
+import com.kmgtechnologies.secureblog.dto.AuthResponse;
+import com.kmgtechnologies.secureblog.dto.LoginRequest;
 import com.kmgtechnologies.secureblog.dto.RegisterRequest;
 import com.kmgtechnologies.secureblog.dto.UserResponse;
 import com.kmgtechnologies.secureblog.service.UserService;
@@ -16,6 +18,11 @@ public class AuthController {
 
     public AuthController(UserService userService) {
         this.userService = userService;
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
+        return ResponseEntity.ok(userService.login(request));
     }
 
     @PostMapping("/register")
