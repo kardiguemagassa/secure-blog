@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
-@Tag(name = "Authentication")
+@Tag(name = "Authentication", description = "Registration and JWT login")
 @SecurityRequirements
 @RestController
 @RequestMapping("/api/auth")

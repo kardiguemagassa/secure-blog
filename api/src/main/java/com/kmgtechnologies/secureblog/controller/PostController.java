@@ -2,6 +2,7 @@ package com.kmgtechnologies.secureblog.controller;
 
 import com.kmgtechnologies.secureblog.dto.PostRequest;
 import com.kmgtechnologies.secureblog.dto.PostResponse;
+import com.kmgtechnologies.secureblog.security.CurrentUser;
 import com.kmgtechnologies.secureblog.service.PostService;
 import io.swagger.v3.oas.annotations.security.SecurityRequirements;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -17,16 +18,14 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
-import java.util.Objects;
 import java.util.UUID;
 
-@Tag(name = "Posts")
+@Tag(name = "Posts", description = "Blog posts: public reads, owner or admin writes")
 @RestController
 @RequestMapping("/api/posts")
 public class PostController {
 
-    private static final String OWNER_OR_ADMIN =
-            "hasRole('ADMIN') or @postSecurity.isOwner(#id, authentication)";
+    private static final String OWNER_OR_ADMIN = "hasRole('ADMIN') or @postSecurity.isOwner(#id, authentication)";
 
     private final PostService postService;
 
@@ -51,15 +50,13 @@ public class PostController {
     // ----- authentifié -----
 
     @GetMapping("/me")
-    public PagedModel<PostResponse> myPosts(@AuthenticationPrincipal Jwt jwt,
-                                            @PageableDefault(size = 10) Pageable pageable) {
-        return new PagedModel<>(postService.findByAuthor(currentUserId(jwt), pageable));
+    public PagedModel<PostResponse> myPosts(@AuthenticationPrincipal Jwt jwt, @PageableDefault(size = 10) Pageable pageable) {
+        return new PagedModel<>(postService.findByAuthor(CurrentUser.id(jwt), pageable));
     }
 
     @PostMapping
-    public ResponseEntity<PostResponse> create(@AuthenticationPrincipal Jwt jwt,
-                                               @Valid @RequestBody PostRequest request) {
-        PostResponse created = postService.create(request, currentUserId(jwt));
+    public ResponseEntity<PostResponse> create(@AuthenticationPrincipal Jwt jwt, @Valid @RequestBody PostRequest request) {
+        PostResponse created = postService.create(request, CurrentUser.id(jwt));
         URI location = ServletUriComponentsBuilder.fromCurrentRequest()
                 .path("/{id}").buildAndExpand(created.id()).toUri();
         return ResponseEntity.created(location).body(created);
@@ -78,7 +75,4 @@ public class PostController {
         return ResponseEntity.noContent().build();
     }
 
-    private static UUID currentUserId(Jwt jwt) {
-        return UUID.fromString(Objects.requireNonNull(jwt.getSubject()));
-    }
 }
