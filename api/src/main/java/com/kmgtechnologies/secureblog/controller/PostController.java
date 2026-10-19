@@ -3,6 +3,8 @@ package com.kmgtechnologies.secureblog.controller;
 import com.kmgtechnologies.secureblog.dto.PostRequest;
 import com.kmgtechnologies.secureblog.dto.PostResponse;
 import com.kmgtechnologies.secureblog.service.PostService;
+import io.swagger.v3.oas.annotations.security.SecurityRequirements;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
@@ -18,6 +20,7 @@ import java.net.URI;
 import java.util.Objects;
 import java.util.UUID;
 
+@Tag(name = "Posts")
 @RestController
 @RequestMapping("/api/posts")
 public class PostController {
@@ -33,11 +36,13 @@ public class PostController {
 
     // ----- public -----
 
+    @SecurityRequirements
     @GetMapping
     public PagedModel<PostResponse> findAll(@PageableDefault(size = 10) Pageable pageable) {
         return new PagedModel<>(postService.findAll(pageable));
     }
 
+    @SecurityRequirements
     @GetMapping("/{id}")
     public PostResponse findById(@PathVariable UUID id) {
         return postService.findById(id);
