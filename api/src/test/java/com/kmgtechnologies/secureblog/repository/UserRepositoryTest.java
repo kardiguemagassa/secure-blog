@@ -5,8 +5,10 @@ import com.kmgtechnologies.secureblog.entity.User;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 
 @DataJpaTest
 class UserRepositoryTest {
@@ -37,5 +39,20 @@ class UserRepositoryTest {
         assertThat(userRepository.existsByEmail("another@example.com")).isTrue();
         assertThat(userRepository.existsByUsername("anotheruser")).isTrue();
         assertThat(userRepository.existsByEmail("unknown@example.com")).isFalse();
+    }
+
+    @Test
+    void shouldNormalizeEmailOnCreation() {
+        userRepository.saveAndFlush(new User("mixed", "  Mixed@Example.COM ", "hash"));
+
+        assertThat(userRepository.findByEmail("mixed@example.com")).isPresent();
+    }
+
+    @Test
+    void shouldRejectDuplicateEmailAndUsername() {
+        userRepository.saveAndFlush(new User("u1", "dup@example.com", "hash"));
+
+        assertThatThrownBy(() -> userRepository.saveAndFlush(new User("u2", "dup@example.com", "hash")))
+                .isInstanceOf(DataIntegrityViolationException.class);
     }
 }

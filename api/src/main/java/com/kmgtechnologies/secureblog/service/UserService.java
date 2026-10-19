@@ -6,11 +6,15 @@ import com.kmgtechnologies.secureblog.dto.RegisterRequest;
 import com.kmgtechnologies.secureblog.dto.UserResponse;
 import com.kmgtechnologies.secureblog.entity.User;
 import com.kmgtechnologies.secureblog.repository.UserRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -18,47 +22,61 @@ public class UserService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
+    private final String dummyHash;
 
     public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
+        this.dummyHash = passwordEncoder.encode("timing-attack-protection");
     }
 
     @Transactional
     public UserResponse register(RegisterRequest request) {
+        String email = User.normalizeEmail(request.email());
+        String username = request.username().trim();
 
-        if (userRepository.existsByEmail(request.email())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use");
+        if (userRepository.existsByEmail(email)) {
+            throw conflict("Email already in use");
+        }
+        if (userRepository.existsByUsername(username)) {
+            throw conflict("Username already in use");
         }
 
-        if (userRepository.existsByUsername(request.username())) {
-            throw new ResponseStatusException(HttpStatus.CONFLICT, "Username already in use");
+        User user = new User(username, email, passwordEncoder.encode(request.password()));
+
+        try {
+            user = userRepository.saveAndFlush(user);
+        } catch (DataIntegrityViolationException e) {
+            throw conflict("Email or username already in use");
         }
 
-        String hashedPassword = passwordEncoder.encode(request.password());
-
-        User user = new User(request.username(), request.email(), hashedPassword);
-
-        User savedUser = userRepository.save(user);
-
-        return new UserResponse(savedUser.getId(), savedUser.getUsername(), savedUser.getEmail(), savedUser.getRole());
+        return new UserResponse(user.getId(), user.getUsername(), user.getEmail(), user.getRole());
     }
 
+    @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
+        Optional<User> user = userRepository.findByEmail(User.normalizeEmail(request.email()));
 
-        // 1. Rechercher l'utilisateur par email
-        User user = userRepository.findByEmail(request.email())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials"));
+        // BCrypt est toujours exécuté : temps de réponse identique, que l'email existe ou non
+        String hash = user.map(User::getPassword).orElse(dummyHash);
+        boolean passwordMatches = passwordEncoder.matches(request.password(), hash);
 
-        // 2. Vérifier le mot de passe avec BCrypt
-        if (!passwordEncoder.matches(request.password(), user.getPassword())) {
+        if (user.isEmpty() || !passwordMatches) {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
         }
 
-        // 3. Générer un JWT et le retourner
-        String token = jwtService.generateToken(user);
+        return new AuthResponse(jwtService.generateToken(user.get()), "Bearer");
+    }
 
-        return new AuthResponse(token, "Bearer");
+    @Transactional(readOnly = true)
+    public UserResponse getById(UUID id) {
+        return userRepository.findById(id)
+                .map(UserResponse::from)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User no longer exists"));
+    }
+
+    private static ResponseStatusException conflict(String message) {
+        return new ResponseStatusException(HttpStatus.CONFLICT, message);
     }
 }

@@ -1,130 +1,165 @@
 package com.kmgtechnologies.secureblog.service;
 
+import com.kmgtechnologies.secureblog.dto.AuthResponse;
+import com.kmgtechnologies.secureblog.dto.LoginRequest;
 import com.kmgtechnologies.secureblog.dto.RegisterRequest;
 import com.kmgtechnologies.secureblog.dto.UserResponse;
+import com.kmgtechnologies.secureblog.entity.Role;
 import com.kmgtechnologies.secureblog.entity.User;
 import com.kmgtechnologies.secureblog.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.kmgtechnologies.secureblog.dto.LoginRequest;
-import com.kmgtechnologies.secureblog.dto.AuthResponse;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceTest {
 
-    @Mock
-    private UserRepository userRepository;
+    private static final String DUMMY_HASH = "dummy-hash";
 
-    @Mock
-    private PasswordEncoder passwordEncoder;
+    @Mock private UserRepository userRepository;
+    @Mock private PasswordEncoder passwordEncoder;
+    @Mock private JwtService jwtService;
 
-    @Mock
-    private JwtService jwtService;
-
-    @InjectMocks
     private UserService userService;
-
     private RegisterRequest request;
 
     @BeforeEach
     void setUp() {
+        when(passwordEncoder.encode(anyString())).thenReturn(DUMMY_HASH); // consommé par le constructeur
+        userService = new UserService(userRepository, passwordEncoder, jwtService);
         request = new RegisterRequest("alice", "alice@example.com", "TestPassword123!");
     }
 
+    // ---------- register ----------
+
     @Test
     void shouldRegisterUserSuccessfully() {
-        when(userRepository.existsByEmail(request.email())).thenReturn(false);
-
-        when(userRepository.existsByUsername(request.username())).thenReturn(false);
-
-        when(passwordEncoder.encode(request.password())).thenReturn("hashed-password");
-
-        when(userRepository.save(any(User.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(userRepository.existsByEmail("alice@example.com")).thenReturn(false);
+        when(userRepository.existsByUsername("alice")).thenReturn(false);
+        when(passwordEncoder.encode("TestPassword123!")).thenReturn("hashed-password");
+        when(userRepository.saveAndFlush(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
 
         UserResponse response = userService.register(request);
 
         assertEquals("alice", response.username());
         assertEquals("alice@example.com", response.email());
-        assertEquals("ROLE_USER", response.role().name());
+        assertEquals(Role.ROLE_USER, response.role());
+        verify(userRepository).saveAndFlush(argThat(u -> u.getPassword().equals("hashed-password")));
+    }
 
-        verify(passwordEncoder).encode("TestPassword123!");
-        verify(userRepository).save(any(User.class));
+    @Test
+    void shouldNormalizeEmailAndUsernameOnRegister() {
+        RegisterRequest mixed = new RegisterRequest("  alice ", "  Alice@Example.COM ", "TestPassword123!");
+        when(userRepository.existsByEmail("alice@example.com")).thenReturn(false);
+        when(userRepository.existsByUsername("alice")).thenReturn(false);
+        when(userRepository.saveAndFlush(any(User.class))).thenAnswer(inv -> inv.getArgument(0));
+
+        UserResponse response = userService.register(mixed);
+
+        assertEquals("alice@example.com", response.email());
+        assertEquals("alice", response.username());
     }
 
     @Test
     void shouldRejectDuplicateEmail() {
-        when(userRepository.existsByEmail(request.email())).thenReturn(true);
+        when(userRepository.existsByEmail("alice@example.com")).thenReturn(true);
 
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> userService.register(request));
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> userService.register(request));
 
-        assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
-        assertEquals("Email already in use", exception.getReason());
-
-        verify(userRepository, never()).save(any(User.class));
-        verifyNoInteractions(passwordEncoder);
+        assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
+        assertEquals("Email already in use", ex.getReason());
+        verify(userRepository, never()).saveAndFlush(any());
+        verify(passwordEncoder, never()).encode(request.password());
     }
 
     @Test
     void shouldRejectDuplicateUsername() {
-        when(userRepository.existsByEmail(request.email())).thenReturn(false);
+        when(userRepository.existsByEmail("alice@example.com")).thenReturn(false);
+        when(userRepository.existsByUsername("alice")).thenReturn(true);
 
-        when(userRepository.existsByUsername(request.username())).thenReturn(true);
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> userService.register(request));
 
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> userService.register(request));
-
-        assertEquals(HttpStatus.CONFLICT, exception.getStatusCode());
-        assertEquals("Username already in use", exception.getReason());
-
-        verify(userRepository, never()).save(any(User.class));
-        verifyNoInteractions(passwordEncoder);
+        assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
+        assertEquals("Username already in use", ex.getReason());
+        verify(userRepository, never()).saveAndFlush(any());
+        verify(passwordEncoder, never()).encode(request.password());
     }
 
     @Test
+    void shouldReturnConflictWhenConcurrentRegistrationViolatesUniqueConstraint() {
+        when(userRepository.existsByEmail("alice@example.com")).thenReturn(false);
+        when(userRepository.existsByUsername("alice")).thenReturn(false);
+        when(userRepository.saveAndFlush(any(User.class)))
+                .thenThrow(new DataIntegrityViolationException("duplicate key"));
+
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class, () -> userService.register(request));
+
+        assertEquals(HttpStatus.CONFLICT, ex.getStatusCode());
+    }
+
+    // ---------- login ----------
+
+    @Test
     void shouldLoginSuccessfully() {
-        LoginRequest request = new LoginRequest("alice@example.com", "TestPassword123!");
-
         User user = new User("alice", "alice@example.com", "hashed-password");
-
-        when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(user));
-
-        when(passwordEncoder.matches(request.password(), user.getPassword())).thenReturn(true);
-
+        when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("TestPassword123!", "hashed-password")).thenReturn(true);
         when(jwtService.generateToken(user)).thenReturn("test-jwt-token");
 
-        AuthResponse response = userService.login(request);
+        AuthResponse response = userService.login(new LoginRequest("alice@example.com", "TestPassword123!"));
 
         assertEquals("test-jwt-token", response.accessToken());
         assertEquals("Bearer", response.tokenType());
+    }
 
-        verify(jwtService).generateToken(user);
+    @Test
+    void shouldNormalizeEmailOnLogin() {
+        User user = new User("alice", "alice@example.com", "hashed-password");
+        when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("TestPassword123!", "hashed-password")).thenReturn(true);
+        when(jwtService.generateToken(user)).thenReturn("test-jwt-token");
+
+        AuthResponse response = userService.login(new LoginRequest("  Alice@Example.COM ", "TestPassword123!"));
+
+        assertEquals("test-jwt-token", response.accessToken());
     }
 
     @Test
     void shouldRejectLoginWithInvalidPassword() {
-        LoginRequest request = new LoginRequest("alice@example.com", "wrongpassword");
-
         User user = new User("alice", "alice@example.com", "hashed-password");
+        when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.of(user));
+        when(passwordEncoder.matches("wrongpassword", "hashed-password")).thenReturn(false);
 
-        when(userRepository.findByEmail(request.email())).thenReturn(Optional.of(user));
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> userService.login(new LoginRequest("alice@example.com", "wrongpassword")));
 
-        when(passwordEncoder.matches(request.password(), user.getPassword())).thenReturn(false);
+        assertEquals(HttpStatus.UNAUTHORIZED, ex.getStatusCode());
+        verifyNoInteractions(jwtService);
+    }
 
-        ResponseStatusException exception = assertThrows(ResponseStatusException.class, () -> userService.login(request));
+    @Test
+    void shouldRunBcryptAgainstDummyHashWhenEmailUnknown() {
+        when(userRepository.findByEmail("ghost@example.com")).thenReturn(Optional.empty());
 
-        assertEquals(HttpStatus.UNAUTHORIZED, exception.getStatusCode());
+        ResponseStatusException ex = assertThrows(ResponseStatusException.class,
+                () -> userService.login(new LoginRequest("ghost@example.com", "whatever")));
+
+        assertEquals(HttpStatus.UNAUTHORIZED, ex.getStatusCode());
+        assertEquals("Invalid credentials", ex.getReason()); // même message : pas d'indice sur l'existence du compte
+        verify(passwordEncoder).matches("whatever", DUMMY_HASH);
         verifyNoInteractions(jwtService);
     }
 }
