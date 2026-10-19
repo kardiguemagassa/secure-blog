@@ -34,6 +34,7 @@ class PostControllerTest {
     @Autowired private UserRepository userRepository;
     @Autowired private PostRepository postRepository;
     @Autowired private UserJwtGenerator userJwtGenerator;
+
     private MockMvc mockMvc;
 
     private User alice;
@@ -84,9 +85,16 @@ class PostControllerTest {
         }
 
         @Test
-        void unknownPostReturns404() throws Exception {
+        void unknownPostReturns404WithProblemDetail() throws Exception {
             mockMvc.perform(get("/api/posts/{id}", UUID.randomUUID()))
-                    .andExpect(status().isNotFound());
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.detail").value("Post not found"));
+        }
+
+        @Test
+        void invalidUuidReturns400() throws Exception {
+            mockMvc.perform(get("/api/posts/not-a-uuid"))
+                    .andExpect(status().isBadRequest());
         }
     }
 
@@ -97,7 +105,9 @@ class PostControllerTest {
 
         @Test
         void anonymousCannotCreate() throws Exception {
-            mockMvc.perform(post("/api/posts").contentType(MediaType.APPLICATION_JSON).content(body("T", "C")))
+            mockMvc.perform(post("/api/posts")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body("T", "C")))
                     .andExpect(status().isUnauthorized());
         }
 
@@ -110,15 +120,28 @@ class PostControllerTest {
                     .andExpect(status().isCreated())
                     .andExpect(header().string("Location", containsString("/api/posts/")))
                     .andExpect(jsonPath("$.authorUsername").value("bob"))
-                    .andExpect(jsonPath("$.authorId").value(bob.getId().toString()));
+                    .andExpect(jsonPath("$.authorId").value(bob.getId().toString()))
+                    .andExpect(jsonPath("$.createdAt").isNotEmpty())
+                    .andExpect(jsonPath("$.updatedAt").isNotEmpty());
         }
 
         @Test
-        void invalidBodyReturns400() throws Exception {
+        void invalidBodyReturnsProblemDetailWithFieldErrors() throws Exception {
             mockMvc.perform(post("/api/posts")
                             .header(AUTH, bearer(bob))
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(body("", "Contenu")))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").value(400))
+                    .andExpect(jsonPath("$.errors.title").exists());
+        }
+
+        @Test
+        void malformedJsonReturns400() throws Exception {
+            mockMvc.perform(post("/api/posts")
+                            .header(AUTH, bearer(bob))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content("{not valid json"))
                     .andExpect(status().isBadRequest());
         }
     }
@@ -131,7 +154,8 @@ class PostControllerTest {
         @Test
         void anonymousCannotUpdate() throws Exception {
             mockMvc.perform(put("/api/posts/{id}", alicePost.getId())
-                            .contentType(MediaType.APPLICATION_JSON).content(body("X", "X")))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(body("X", "X")))
                     .andExpect(status().isUnauthorized());
         }
 
@@ -227,39 +251,6 @@ class PostControllerTest {
             mockMvc.perform(get("/api/posts/me"))
                     .andExpect(status().isUnauthorized());
         }
-    }
-
-    @Test
-    void invalidBodyReturnsProblemDetailWithFieldErrors() throws Exception {
-        mockMvc.perform(post("/api/posts")
-                        .header(AUTH, bearer(bob))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(body("", "Contenu")))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.status").value(400))
-                .andExpect(jsonPath("$.errors.title").exists());
-    }
-
-    @Test
-    void malformedJsonReturns400() throws Exception {
-        mockMvc.perform(post("/api/posts")
-                        .header(AUTH, bearer(bob))
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("{not valid json"))
-                .andExpect(status().isBadRequest());
-    }
-
-    @Test
-    void unknownPostReturns404() throws Exception {
-        mockMvc.perform(get("/api/posts/{id}", UUID.randomUUID()))
-                .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.detail").value("Post not found"));
-    }
-
-    @Test
-    void invalidUuidReturns400() throws Exception {
-        mockMvc.perform(get("/api/posts/not-a-uuid"))
-                .andExpect(status().isBadRequest());
     }
 
     // ===================== Helpers =====================
