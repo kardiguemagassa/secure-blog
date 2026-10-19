@@ -69,4 +69,18 @@ class PostRepositoryTest {
         assertThat(page.getTotalElements()).isEqualTo(2);
         assertThat(page.getContent()).extracting(Post::getTitle).containsExactlyInAnyOrder("a1", "a2");
     }
+
+    @Test
+    void shouldDeleteAllPostsOfGivenAuthorOnly() {
+        postRepository.save(new Post("a1", "c", alice));
+        postRepository.save(new Post("a2", "c", alice));
+        Post bobPost = postRepository.saveAndFlush(new Post("b1", "c", bob));
+
+        int deleted = postRepository.deleteByAuthorId(alice.getId());
+
+        assertThat(deleted).isEqualTo(2);
+        assertThat(postRepository.findAll())
+                .extracting(Post::getId)
+                .containsExactly(bobPost.getId());
+    }
 }
