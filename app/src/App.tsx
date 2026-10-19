@@ -1,19 +1,19 @@
-import { useEffect, useState } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { apiFetch } from './api/client'
+import type { Page, PostResponse } from './types/api'
 
 export default function App() {
-  const [status, setStatus] = useState('Checking API…')
-
-  useEffect(() => {
-    fetch('/api/posts')
-        .then((response) => (response.ok ? response.json() : Promise.reject(response.status)))
-        .then((page) => setStatus(`API OK: ${page.page.totalElements} post(s)`))
-        .catch((error) => setStatus(`API error: ${error}`))
-  }, [])
+  const { data, error, isPending } = useQuery({
+    queryKey: ['posts', 'smoke-test'],
+    queryFn: () => apiFetch<Page<PostResponse>>('/api/posts'),
+  })
 
   return (
       <main>
         <h1>Secure Blog</h1>
-        <p>{status}</p>
+        {isPending && <p>Checking API…</p>}
+        {error && <p>API error: {error.message}</p>}
+        {data && <p>API OK: {data.page.totalElements} post(s)</p>}
       </main>
   )
 }
