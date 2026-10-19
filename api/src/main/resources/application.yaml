@@ -21,4 +21,5 @@ spring:
 app:
   jwt:
     secret: ${JWT_SECRET}
-    expiration-minutes: 60
+    issuer: ${JWT_ISSUER:secure-blog}
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:60}
