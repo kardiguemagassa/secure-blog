@@ -48,7 +48,7 @@ public class User {
         this.role = Objects.requireNonNull(newRole, "role must not be null");
     }
 
-    private static String normalizeEmail(String email) {
+    public static String normalizeEmail(String email) {
         return email == null ? null : email.trim().toLowerCase(Locale.ROOT);
     }
 }
