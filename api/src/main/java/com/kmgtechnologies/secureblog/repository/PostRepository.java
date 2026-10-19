@@ -15,10 +15,10 @@ public interface PostRepository extends JpaRepository<Post, UUID> {
     Page<Post> findAllByOrderByCreatedAtDesc(Pageable pageable);
 
     @EntityGraph(attributePaths = "author")
-    Page<Post> findByAuthorEmailOrderByCreatedAtDesc(String email, Pageable pageable);
+    Page<Post> findByAuthorIdOrderByCreatedAtDesc(UUID authorId, Pageable pageable);
 
     @EntityGraph(attributePaths = "author")
     Optional<Post> findWithAuthorById(UUID id);
 
-    boolean existsByIdAndAuthorEmail(UUID id, String email);
+    boolean existsByIdAndAuthorId(UUID id, UUID authorId);
 }

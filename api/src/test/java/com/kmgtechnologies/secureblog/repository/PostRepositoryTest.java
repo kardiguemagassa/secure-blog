@@ -55,8 +55,8 @@ class PostRepositoryTest {
     void shouldCheckOwnership() {
         Post saved = postRepository.saveAndFlush(new Post("Titre", "Contenu", alice));
 
-        assertThat(postRepository.existsByIdAndAuthorEmail(saved.getId(), "alice@example.com")).isTrue();
-        assertThat(postRepository.existsByIdAndAuthorEmail(saved.getId(), "bob@example.com")).isFalse();
+        assertThat(postRepository.existsByIdAndAuthorId(saved.getId(), alice.getId())).isTrue();
+        assertThat(postRepository.existsByIdAndAuthorId(saved.getId(), bob.getId())).isFalse();
     }
 
     @Test
@@ -65,9 +65,7 @@ class PostRepositoryTest {
         postRepository.save(new Post("a2", "c", alice));
         postRepository.saveAndFlush(new Post("b1", "c", bob));
 
-        Page<Post> page = postRepository
-                .findByAuthorEmailOrderByCreatedAtDesc("alice@example.com", PageRequest.of(0, 10));
-
+        Page<Post> page =postRepository.findByAuthorIdOrderByCreatedAtDesc(alice.getId(), PageRequest.of(0, 10));
         assertThat(page.getTotalElements()).isEqualTo(2);
         assertThat(page.getContent()).extracting(Post::getTitle).containsExactlyInAnyOrder("a1", "a2");
     }
