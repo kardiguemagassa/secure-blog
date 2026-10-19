@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserService {
@@ -66,6 +67,13 @@ public class UserService {
         }
 
         return new AuthResponse(jwtService.generateToken(user.get()), "Bearer");
+    }
+
+    @Transactional(readOnly = true)
+    public UserResponse getById(UUID id) {
+        return userRepository.findById(id)
+                .map(UserResponse::from)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User no longer exists"));
     }
 
     private static ResponseStatusException conflict(String message) {
