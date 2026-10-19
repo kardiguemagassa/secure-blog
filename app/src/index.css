@@ -60,14 +60,14 @@ header {
   border-bottom: 1px solid var(--border);
 }
 
-nav,
+header nav,
 main {
   max-width: 960px;
   margin: 0 auto;
   padding: 0.75rem 1rem;
 }
 
-nav {
+header nav {
   display: flex;
   align-items: center;
   gap: 1rem;
@@ -126,4 +126,14 @@ button:disabled {
   margin: 0.25rem 0 0;
   color: var(--danger);
   font-size: 0.9rem;
+}
+
+[aria-busy='true'] {
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+header nav a[aria-current='page'] {
+  font-weight: 600;
+  text-decoration: none;
 }
