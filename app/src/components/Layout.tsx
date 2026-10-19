@@ -14,10 +14,10 @@ export function Layout() {
     <>
       <header>
         <nav>
-          <Link to="/">Secure Blog</Link>{' '}
+          <Link to="/">Secure Blog</Link>
           {isAuthenticated ? (
             <>
-              <NavLink to="/me">{user?.username}</NavLink>{' '}
+              <NavLink to="/me">{user?.username}</NavLink>
               <button type="button" onClick={handleLogout}>
                 Log out
               </button>
@@ -30,9 +30,9 @@ export function Layout() {
           )}
         </nav>
       </header>
-      <>
+      <main>
         <Outlet />
-      </>
+      </main>
     </>
   )
 }
