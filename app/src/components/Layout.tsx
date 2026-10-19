@@ -17,6 +17,7 @@ export function Layout() {
           <Link to="/">Secure Blog</Link>
           {isAuthenticated ? (
             <>
+              <NavLink to="/posts/new">New post</NavLink>
               <NavLink to="/me">{user?.username}</NavLink>
               <button type="button" onClick={handleLogout}>
                 Log out

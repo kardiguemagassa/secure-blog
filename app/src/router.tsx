@@ -7,6 +7,8 @@ import { NotFoundPage } from './pages/NotFoundPage'
 import { PostPage } from './pages/PostPage'
 import { ProfilePage } from './pages/ProfilePage'
 import { RegisterPage } from './pages/RegisterPage'
+import { EditPostPage } from './pages/EditPostPage'
+import { NewPostPage } from './pages/NewPostPage'
 
 export const router = createBrowserRouter([
   {
@@ -18,7 +20,11 @@ export const router = createBrowserRouter([
       { path: 'register', element: <RegisterPage /> },
       {
         element: <ProtectedRoute />,
-        children: [{ path: 'me', element: <ProfilePage /> }],
+        children: [
+          { path: 'me', element: <ProfilePage /> },
+          { path: 'posts/new', element: <NewPostPage /> },
+          { path: 'posts/:id/edit', element: <EditPostPage /> },
+        ],
       },
       { path: '*', element: <NotFoundPage /> },
     ],

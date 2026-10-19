@@ -1,9 +1,10 @@
-.meta {
-  color: var(--muted);
-  font-size: 0.875rem;
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 1rem 0;
 }
 
-.content {
-  margin: 1.5rem 0;
-  white-space: pre-line;
+.danger {
+  background: var(--danger);
 }
