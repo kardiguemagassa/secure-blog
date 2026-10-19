@@ -230,6 +230,39 @@ class PostControllerTest {
         }
     }
 
+    @Test
+    void invalidBodyReturnsProblemDetailWithFieldErrors() throws Exception {
+        mockMvc.perform(post("/api/posts")
+                        .header(AUTH, bearer(bob))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body("", "Contenu")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.status").value(400))
+                .andExpect(jsonPath("$.errors.title").exists());
+    }
+
+    @Test
+    void malformedJsonReturns400() throws Exception {
+        mockMvc.perform(post("/api/posts")
+                        .header(AUTH, bearer(bob))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{not valid json"))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void unknownPostReturns404() throws Exception {
+        mockMvc.perform(get("/api/posts/{id}", UUID.randomUUID()))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.detail").value("Post not found"));
+    }
+
+    @Test
+    void invalidUuidReturns400() throws Exception {
+        mockMvc.perform(get("/api/posts/not-a-uuid"))
+                .andExpect(status().isBadRequest());
+    }
+
     // ===================== Helpers =====================
 
     private String bearer(User user) {
