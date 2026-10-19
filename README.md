@@ -174,14 +174,14 @@ Controller tests cover the full authorization matrix (anonymous, owner, other us
 
 ```
 api/src/main/java/com/kmgtechnologies/secureblog
-├── config        # Security, JWT, password encoder, OpenAPI
-├── controller    # REST endpoints
-├── dto           # Request and response records
-├── entity        # JPA entities and Role enum
-├── exception     # Global exception handler
-├── repository    # Spring Data repositories
-├── security      # Ownership checks, current user helper
-└── service       # Business logic
+├── config      # Security rules, JWT encoder/decoder, typed properties, OpenAPI
+├── controller  # REST endpoints
+├── dto         # Request and response records
+├── entity      # JPA entities and Role enum
+├── exception   # Global exception handler
+├── repository  # Spring Data repositories
+├── security    # JWT generation, ownership checks, current user helper
+└── service     # Business logic
 ```
 
 ## Git workflow
