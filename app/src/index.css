@@ -132,3 +132,8 @@ button:disabled {
   opacity: 0.6;
   transition: opacity 0.2s;
 }
+
+header nav a[aria-current='page'] {
+  font-weight: 600;
+  text-decoration: none;
+}

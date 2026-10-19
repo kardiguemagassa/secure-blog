@@ -8,6 +8,7 @@ export const postKeys = {
   all: ['posts'] as const,
   lists: () => [...postKeys.all, 'list'] as const,
   list: (page: number) => [...postKeys.lists(), { page }] as const,
+  mine: (page: number) => [...postKeys.lists(), 'mine', { page }] as const,
   detail: (id: string) => [...postKeys.all, 'detail', id] as const,
 }
 
@@ -36,4 +37,9 @@ export function updatePost(id: string, data: PostRequest): Promise<PostResponse>
 
 export function deletePost(id: string): Promise<void> {
   return apiFetch<void>(`/api/posts/${encodeURIComponent(id)}`, { method: 'DELETE' })
+}
+
+export function getMyPosts(page: number, size = POSTS_PAGE_SIZE): Promise<Page<PostResponse>> {
+  const params = new URLSearchParams({ page: String(page), size: String(size) })
+  return apiFetch<Page<PostResponse>>(`/api/posts/me?${params}`)
 }
