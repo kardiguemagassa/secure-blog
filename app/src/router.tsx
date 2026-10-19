@@ -10,6 +10,7 @@ import { RegisterPage } from './pages/RegisterPage'
 import { EditPostPage } from './pages/EditPostPage'
 import { NewPostPage } from './pages/NewPostPage'
 import { MyPostsPage } from './pages/MyPostsPage'
+import { AdminUsersPage } from './pages/AdminUsersPage.tsx'
 
 export const router = createBrowserRouter([
   {
@@ -27,6 +28,10 @@ export const router = createBrowserRouter([
           { path: 'posts/new', element: <NewPostPage /> },
           { path: 'posts/:id/edit', element: <EditPostPage /> },
         ],
+      },
+      {
+        element: <ProtectedRoute role="ROLE_ADMIN" />,
+        children: [{ path: 'admin/users', element: <AdminUsersPage /> }],
       },
       { path: '*', element: <NotFoundPage /> },
     ],
