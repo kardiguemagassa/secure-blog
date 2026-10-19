@@ -5,7 +5,8 @@ import com.kmgtechnologies.secureblog.entity.Role;
 import com.kmgtechnologies.secureblog.entity.User;
 import com.kmgtechnologies.secureblog.repository.PostRepository;
 import com.kmgtechnologies.secureblog.repository.UserRepository;
-import com.kmgtechnologies.secureblog.service.JwtService;
+
+import com.kmgtechnologies.secureblog.security.UserJwtGenerator;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -31,7 +32,7 @@ class AdminUserControllerTest {
     @Autowired private WebApplicationContext context;
     @Autowired private UserRepository userRepository;
     @Autowired private PostRepository postRepository;
-    @Autowired private JwtService jwtService;
+    @Autowired private UserJwtGenerator userJwtGenerator;
 
     private MockMvc mockMvc;
     private User alice;
@@ -125,6 +126,6 @@ class AdminUserControllerTest {
     }
 
     private String bearer(User user) {
-        return "Bearer " + jwtService.generateToken(user);
+        return "Bearer " + userJwtGenerator.generateToken(user);
     }
 }

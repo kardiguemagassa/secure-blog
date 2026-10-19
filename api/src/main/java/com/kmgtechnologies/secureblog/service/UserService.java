@@ -6,6 +6,7 @@ import com.kmgtechnologies.secureblog.dto.RegisterRequest;
 import com.kmgtechnologies.secureblog.dto.UserResponse;
 import com.kmgtechnologies.secureblog.entity.User;
 import com.kmgtechnologies.secureblog.repository.UserRepository;
+import com.kmgtechnologies.secureblog.security.UserJwtGenerator;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,13 +22,13 @@ public class UserService {
 
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
-    private final JwtService jwtService;
+    private final UserJwtGenerator userJwtGenerator;
     private final String dummyHash;
 
-    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, JwtService jwtService) {
+    public UserService(UserRepository userRepository, PasswordEncoder passwordEncoder, UserJwtGenerator userJwtGenerator) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
-        this.jwtService = jwtService;
+        this.userJwtGenerator = userJwtGenerator;
         this.dummyHash = passwordEncoder.encode("timing-attack-protection");
     }
 
@@ -66,7 +67,7 @@ public class UserService {
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Invalid credentials");
         }
 
-        return new AuthResponse(jwtService.generateToken(user.get()), "Bearer");
+        return new AuthResponse(userJwtGenerator.generateToken(user.get()), "Bearer");
     }
 
     @Transactional(readOnly = true)

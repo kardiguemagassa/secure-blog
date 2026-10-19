@@ -7,6 +7,7 @@ import com.kmgtechnologies.secureblog.dto.UserResponse;
 import com.kmgtechnologies.secureblog.entity.Role;
 import com.kmgtechnologies.secureblog.entity.User;
 import com.kmgtechnologies.secureblog.repository.UserRepository;
+import com.kmgtechnologies.secureblog.security.UserJwtGenerator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -31,7 +32,7 @@ class UserServiceTest {
 
     @Mock private UserRepository userRepository;
     @Mock private PasswordEncoder passwordEncoder;
-    @Mock private JwtService jwtService;
+    @Mock private UserJwtGenerator userJwtGenerator;
 
     private UserService userService;
     private RegisterRequest request;
@@ -39,7 +40,7 @@ class UserServiceTest {
     @BeforeEach
     void setUp() {
         when(passwordEncoder.encode(anyString())).thenReturn(DUMMY_HASH); // consommé par le constructeur
-        userService = new UserService(userRepository, passwordEncoder, jwtService);
+        userService = new UserService(userRepository, passwordEncoder, userJwtGenerator);
         request = new RegisterRequest("alice", "alice@example.com", "TestPassword123!");
     }
 
@@ -117,7 +118,7 @@ class UserServiceTest {
         User user = new User("alice", "alice@example.com", "hashed-password");
         when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("TestPassword123!", "hashed-password")).thenReturn(true);
-        when(jwtService.generateToken(user)).thenReturn("test-jwt-token");
+        when(userJwtGenerator.generateToken(user)).thenReturn("test-jwt-token");
 
         AuthResponse response = userService.login(new LoginRequest("alice@example.com", "TestPassword123!"));
 
@@ -130,7 +131,7 @@ class UserServiceTest {
         User user = new User("alice", "alice@example.com", "hashed-password");
         when(userRepository.findByEmail("alice@example.com")).thenReturn(Optional.of(user));
         when(passwordEncoder.matches("TestPassword123!", "hashed-password")).thenReturn(true);
-        when(jwtService.generateToken(user)).thenReturn("test-jwt-token");
+        when(userJwtGenerator.generateToken(user)).thenReturn("test-jwt-token");
 
         AuthResponse response = userService.login(new LoginRequest("  Alice@Example.COM ", "TestPassword123!"));
 
@@ -147,7 +148,7 @@ class UserServiceTest {
                 () -> userService.login(new LoginRequest("alice@example.com", "wrongpassword")));
 
         assertEquals(HttpStatus.UNAUTHORIZED, ex.getStatusCode());
-        verifyNoInteractions(jwtService);
+        verifyNoInteractions(userJwtGenerator);
     }
 
     @Test
@@ -160,6 +161,6 @@ class UserServiceTest {
         assertEquals(HttpStatus.UNAUTHORIZED, ex.getStatusCode());
         assertEquals("Invalid credentials", ex.getReason()); // même message : pas d'indice sur l'existence du compte
         verify(passwordEncoder).matches("whatever", DUMMY_HASH);
-        verifyNoInteractions(jwtService);
+        verifyNoInteractions(userJwtGenerator);
     }
 }
