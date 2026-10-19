@@ -1,17 +1,17 @@
 package com.kmgtechnologies.secureblog.controller;
 
 import com.kmgtechnologies.secureblog.dto.UserResponse;
+import com.kmgtechnologies.secureblog.security.CurrentUser;
 import com.kmgtechnologies.secureblog.service.UserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Objects;
-import java.util.UUID;
-
 @RestController
+@Tag(name = "Users", description = "Authenticated user's own profile")
 @RequestMapping("/api/users")
 public class UserController {
 
@@ -23,6 +23,6 @@ public class UserController {
 
     @GetMapping("/me")
     public UserResponse me(@AuthenticationPrincipal Jwt jwt) {
-        return userService.getById(UUID.fromString(Objects.requireNonNull(jwt.getSubject())));
+        return userService.getById(CurrentUser.id(jwt));
     }
 }

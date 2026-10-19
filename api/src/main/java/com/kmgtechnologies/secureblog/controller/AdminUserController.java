@@ -2,7 +2,9 @@ package com.kmgtechnologies.secureblog.controller;
 
 import com.kmgtechnologies.secureblog.dto.ChangeRoleRequest;
 import com.kmgtechnologies.secureblog.dto.UserResponse;
+import com.kmgtechnologies.secureblog.security.CurrentUser;
 import com.kmgtechnologies.secureblog.service.AdminUserService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -13,12 +15,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Objects;
 import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/admin/users")
+@Tag(name = "Admin", description = "User management, ROLE_ADMIN only")
 @PreAuthorize("hasRole('ADMIN')") // défense en profondeur, en plus de la règle d'URL
 public class AdminUserController {
 
@@ -29,23 +30,20 @@ public class AdminUserController {
     }
 
     @GetMapping
-    public PagedModel<UserResponse> findAll(
-            @PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
+    public PagedModel<UserResponse> findAll(@PageableDefault(size = 20, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
         return new PagedModel<>(adminUserService.findAll(pageable));
     }
 
     @PatchMapping("/{id}/role")
     public UserResponse changeRole(@PathVariable UUID id, @Valid @RequestBody ChangeRoleRequest request, @AuthenticationPrincipal Jwt jwt) {
-        return adminUserService.changeRole(id, request.role(), currentUserId(jwt));
+        return adminUserService.changeRole(id, request.role(), CurrentUser.id(jwt));
     }
 
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable UUID id, @AuthenticationPrincipal Jwt jwt) {
-        adminUserService.delete(id, currentUserId(jwt));
+        adminUserService.delete(id, CurrentUser.id(jwt));
         return ResponseEntity.noContent().build();
     }
 
-    private static UUID currentUserId(Jwt jwt) {
-        return UUID.fromString(Objects.requireNonNull(jwt.getSubject()));
-    }
+
 }
