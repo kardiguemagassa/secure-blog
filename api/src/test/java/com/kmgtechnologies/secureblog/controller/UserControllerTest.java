@@ -3,7 +3,8 @@ package com.kmgtechnologies.secureblog.controller;
 import com.kmgtechnologies.secureblog.entity.User;
 import com.kmgtechnologies.secureblog.repository.PostRepository;
 import com.kmgtechnologies.secureblog.repository.UserRepository;
-import com.kmgtechnologies.secureblog.service.JwtService;
+
+import com.kmgtechnologies.secureblog.security.UserJwtGenerator;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,7 +34,7 @@ class UserControllerTest {
     @Autowired private WebApplicationContext context;
     @Autowired private UserRepository userRepository;
     @Autowired private PostRepository postRepository;
-    @Autowired private JwtService jwtService;
+    @Autowired private UserJwtGenerator userJwtGenerator;
     @Autowired private JwtEncoder jwtEncoder;
 
     private MockMvc mockMvc;
@@ -63,7 +64,7 @@ class UserControllerTest {
 
     @Test
     void shouldRejectTokenWithTamperedSignature() throws Exception {
-        String token = jwtService.generateToken(saveUser());
+        String token = userJwtGenerator.generateToken(saveUser());
         String tampered = token.substring(0, token.lastIndexOf('.') + 1) + "dGFtcGVyZWQtc2lnbmF0dXJl";
 
         mockMvc.perform(get("/api/users/me").header("Authorization", "Bearer " + tampered))
@@ -81,7 +82,7 @@ class UserControllerTest {
     @Test
     void shouldRejectValidTokenOfDeletedUser() throws Exception {
         User user = saveUser();
-        String token = jwtService.generateToken(user);
+        String token = userJwtGenerator.generateToken(user);
         userRepository.delete(user);
 
         mockMvc.perform(get("/api/users/me").header("Authorization", "Bearer " + token))
@@ -90,7 +91,7 @@ class UserControllerTest {
 
     @Test
     void shouldReturnCurrentUserWithValidToken() throws Exception {
-        String token = jwtService.generateToken(saveUser());
+        String token = userJwtGenerator.generateToken(saveUser());
 
         mockMvc.perform(get("/api/users/me")
                         .header("Authorization", "Bearer " + token)

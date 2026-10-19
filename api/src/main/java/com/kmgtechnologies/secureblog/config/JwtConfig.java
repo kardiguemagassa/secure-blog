@@ -1,7 +1,7 @@
 package com.kmgtechnologies.secureblog.config;
 
 import com.nimbusds.jose.jwk.source.ImmutableSecret;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -16,11 +16,12 @@ import javax.crypto.spec.SecretKeySpec;
 import java.util.Base64;
 
 @Configuration
+@EnableConfigurationProperties(JwtProperties.class)
 public class JwtConfig {
 
     @Bean
-    public SecretKey jwtSecretKey(@Value("${app.jwt.secret}") String secret) {
-        byte[] keyBytes = Base64.getDecoder().decode(secret);
+    public SecretKey jwtSecretKey(JwtProperties properties) {
+        byte[] keyBytes = Base64.getDecoder().decode(properties.secret());
 
         if (keyBytes.length < 32) {
             throw new IllegalArgumentException("JWT secret must contain at least 256 bits");
@@ -35,11 +36,11 @@ public class JwtConfig {
     }
 
     @Bean
-    public JwtDecoder jwtDecoder(SecretKey jwtSecretKey, @Value("${app.jwt.issuer}") String issuer) {
+    public JwtDecoder jwtDecoder(SecretKey jwtSecretKey, JwtProperties properties) {
         NimbusJwtDecoder decoder = NimbusJwtDecoder.withSecretKey(jwtSecretKey)
                 .macAlgorithm(MacAlgorithm.HS256)
                 .build();
-        decoder.setJwtValidator(JwtValidators.createDefaultWithIssuer(issuer)); // expiration + issuer
+        decoder.setJwtValidator(JwtValidators.createDefaultWithIssuer(properties.issuer()));
         return decoder;
     }
 }
