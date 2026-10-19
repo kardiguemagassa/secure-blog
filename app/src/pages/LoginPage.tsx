@@ -1,10 +1,11 @@
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Navigate, useLocation, useNavigate } from 'react-router'
+import { Link, Navigate, useLocation, useNavigate } from 'react-router'
 import type { Location } from 'react-router'
 import { ApiError } from '../api/client'
 import { useAuth } from '../auth/useAuth'
+import { FormField } from '../components/FormField'
 
 const loginSchema = z.object({
     email: z.email('Enter a valid email address'),
@@ -47,29 +48,22 @@ export function LoginPage() {
         <section>
             <h1>Log in</h1>
             <form onSubmit={handleSubmit(onSubmit)} noValidate>
-                <div>
-                    <label htmlFor="email">Email</label>
-                    <input
-                        id="email"
-                        type="email"
-                        autoComplete="email"
-                        aria-invalid={errors.email ? true : undefined}
-                        {...register('email')}
-                    />
-                    {errors.email && <p role="alert">{errors.email.message}</p>}
-                </div>
-
-                <div>
-                    <label htmlFor="password">Password</label>
-                    <input
-                        id="password"
-                        type="password"
-                        autoComplete="current-password"
-                        aria-invalid={errors.password ? true : undefined}
-                        {...register('password')}
-                    />
-                    {errors.password && <p role="alert">{errors.password.message}</p>}
-                </div>
+                <FormField
+                    id="email"
+                    label="Email"
+                    type="email"
+                    autoComplete="email"
+                    error={errors.email?.message}
+                    {...register('email')}
+                />
+                <FormField
+                    id="password"
+                    label="Password"
+                    type="password"
+                    autoComplete="current-password"
+                    error={errors.password?.message}
+                    {...register('password')}
+                />
 
                 {errors.root && <p role="alert">{errors.root.message}</p>}
 
@@ -77,6 +71,9 @@ export function LoginPage() {
                     {isSubmitting ? 'Logging in…' : 'Log in'}
                 </button>
             </form>
+            <p>
+                No account yet? <Link to="/register">Sign up</Link>
+            </p>
         </section>
     )
 }

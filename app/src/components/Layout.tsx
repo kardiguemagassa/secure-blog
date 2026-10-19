@@ -18,18 +18,19 @@ export function Layout() {
                     {isAuthenticated ? (
                         <>
                             <NavLink to="/me">{user?.username}</NavLink>{' '}
-                            <button type="button" onClick={handleLogout}>
-                                Log out
-                            </button>
+                            <button type="button" onClick={handleLogout}>Log out</button>
                         </>
                     ) : (
-                        <NavLink to="/login">Log in</NavLink>
+                        <>
+                            <NavLink to="/login">Log in</NavLink>
+                            <NavLink to="/register">Sign up</NavLink>
+                        </>
                     )}
                 </nav>
             </header>
-            <main>
+            <>
                 <Outlet />
-            </main>
+            </>
         </>
     )
 }
