@@ -44,7 +44,7 @@ public class PostService {
         User author = userRepository.findById(authorId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.UNAUTHORIZED, "User no longer exists"));
 
-        Post saved = postRepository.save(new Post(request.title().trim(), request.content(), author));
+        Post saved = postRepository.saveAndFlush(new Post(request.title().trim(), request.content(), author));
         return PostResponse.from(saved);
     }
 
