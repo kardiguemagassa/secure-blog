@@ -168,6 +168,8 @@ In Swagger UI, use the **Authorize** button and paste the token without the `Bea
 
 ## Testing
 
+### Backend
+
 ```bash
 cd api
 ./gradlew test
@@ -180,6 +182,15 @@ cd api
 | Controllers | `@SpringBootTest` + MockMvc with real JWTs |
 
 Controller tests cover the full authorization matrix (anonymous, owner, other user, admin) and token edge cases: expired, tampered signature, and valid token of a deleted user.
+
+### Frontend
+
+```bash
+cd app
+npm test
+```
+
+Vitest, Testing Library and jsdom. The tests cover the pure helpers (excerpt, permissions, pagination, server-side validation mapping) and the login form (validation, successful login, error messages, redirects).
 
 ## Frontend
 
