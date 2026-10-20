@@ -102,6 +102,21 @@
   text-decoration: underline;
 }
 
+.title a::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+}
+
+.title a:focus-visible {
+  outline: none;
+}
+
+.card:has(a:focus-visible) {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+
 @media (prefers-reduced-motion: reduce) {
   .card {
     transition: none;
