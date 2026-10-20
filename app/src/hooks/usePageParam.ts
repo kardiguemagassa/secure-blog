@@ -1,4 +1,5 @@
 import { useSearchParams } from 'react-router'
+import { parsePage } from '../lib/pagination'
 
 export function usePageParam() {
   const [searchParams, setSearchParams] = useSearchParams()
@@ -10,9 +11,4 @@ export function usePageParam() {
   }
 
   return [page, setPage] as const
-}
-
-function parsePage(value: string | null): number {
-  const page = Number(value)
-  return Number.isInteger(page) && page >= 1 ? page : 1
 }
