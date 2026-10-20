@@ -1,7 +1,7 @@
 import { apiFetch } from './client'
 import type { Page, PostRequest, PostResponse } from '../types/api'
 
-export const POSTS_PAGE_SIZE = 10
+export const POSTS_PAGE_SIZE = 6
 
 // clés de cache centralisées, pour invalider précisément après une création ou une modification
 export const postKeys = {
