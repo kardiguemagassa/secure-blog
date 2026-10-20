@@ -5,8 +5,11 @@ export function formatDate(iso: string): string {
 }
 
 export function excerpt(text: string, maxLength = 200): string {
-  if (text.length <= maxLength) {
-    return text
+  const singleParagraph = text.replace(/\s+/g, ' ').trim()
+  if (singleParagraph.length <= maxLength) {
+    return singleParagraph
   }
-  return `${text.slice(0, maxLength).trimEnd()}…`
+  const cut = singleParagraph.slice(0, maxLength)
+  const lastSpace = cut.lastIndexOf(' ')
+  return `${cut.slice(0, lastSpace > 0 ? lastSpace : maxLength).trimEnd()}…`
 }

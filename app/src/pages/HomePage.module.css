@@ -80,8 +80,8 @@
   font-weight: 650;
   text-decoration: none;
   transition:
-          transform 160ms ease,
-          background-color 160ms ease;
+    transform 160ms ease,
+    background-color 160ms ease;
 }
 
 .primaryButton:hover {
@@ -132,7 +132,9 @@
   border-radius: 12px;
   background: var(--paper);
 
-  box-shadow: 0 12px 30px rgb(27 35 51 / 5%), 0 30px 65px rgb(27 35 51 / 9%);
+  box-shadow:
+    0 12px 30px rgb(27 35 51 / 5%),
+    0 30px 65px rgb(27 35 51 / 9%);
 
   transform: rotate(-2deg);
 }

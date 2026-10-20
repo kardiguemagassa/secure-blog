@@ -1,4 +1,3 @@
-
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { Link, useNavigate, useParams } from 'react-router'
 import { ApiError } from '../api/client'
@@ -34,7 +33,7 @@ export function PostPage() {
   })
 
   function handleDelete() {
-    if (window.confirm('Delete this post? This cannot be undone.')) {
+    if (window.confirm('Delete this story? This cannot be undone.')) {
       deleteMutation.mutate()
     }
   }
@@ -44,90 +43,79 @@ export function PostPage() {
   }
 
   if (error || !post) {
-    const notFound =
-        error instanceof ApiError &&
-        (error.status === 404 || error.status === 400)
+    const notFound = error instanceof ApiError && (error.status === 404 || error.status === 400)
 
     return (
-        <section>
-          <h1>{notFound ? 'Post not found' : 'Something went wrong'}</h1>
-          <Link to="/">Back to posts</Link>
-        </section>
+      <section>
+        <h1>{notFound ? 'Story not found' : 'Something went wrong'}</h1>
+        <Link to="/">Back to stories</Link>
+      </section>
     )
   }
 
   return (
-      <article className={styles.article}>
-        <nav className={styles.navigation} aria-label="Article navigation">
-          <Link to="/" className={styles.backLink}>
-            <span aria-hidden="true">←</span> Back to stories
-          </Link>
-        </nav>
+    <article className={styles.article}>
+      <nav className={styles.navigation} aria-label="Article navigation">
+        <Link to="/" className={styles.backLink}>
+          <span aria-hidden="true">←</span> Back to stories
+        </Link>
+      </nav>
 
-        <header className={styles.header}>
-          <p className={styles.eyebrow}>
-            <span className={styles.eyebrowDot} aria-hidden="true" />
-            THE COMMUNITY JOURNAL
-          </p>
+      <header className={styles.header}>
+        <p className={styles.eyebrow}>
+          <span className={styles.eyebrowDot} aria-hidden="true" />
+          THE COMMUNITY JOURNAL
+        </p>
 
-          <h1 className={styles.title}>{post.title}</h1>
+        <h1 className={styles.title}>{post.title}</h1>
 
-          <div className={styles.meta}>
+        <div className={styles.meta}>
           <span className={styles.avatar} aria-hidden="true">
             {post.authorUsername.charAt(0).toUpperCase()}
           </span>
 
-            <div className={styles.authorInfo}>
-            <span className={styles.authorName}>
-              {post.authorUsername}
-            </span>
+          <div className={styles.authorInfo}>
+            <span className={styles.authorName}>{post.authorUsername}</span>
 
-              <time
-                  className={styles.date}
-                  dateTime={post.createdAt}
-              >
-                {formatDate(post.createdAt)}
-              </time>
-            </div>
+            <time className={styles.date} dateTime={post.createdAt}>
+              {formatDate(post.createdAt)}
+            </time>
           </div>
-        </header>
+        </div>
+      </header>
 
-        <div className={styles.content}>{post.content}</div>
+      <div className={styles.content}>{post.content}</div>
 
-        <footer className={styles.footer}>
-          <Link to="/" className={styles.backLink}>
-            <span aria-hidden="true">←</span> All stories
-          </Link>
+      <footer className={styles.footer}>
+        <Link to="/" className={styles.backLink}>
+          <span aria-hidden="true">←</span> All stories
+        </Link>
 
-          {canModifyPost(user, post) && (
-              <div className={styles.actions}>
-                <Link
-                    to={`/posts/${post.id}/edit`}
-                    className={styles.editButton}
-                >
-                  Edit story <span aria-hidden="true">↗</span>
-                </Link>
+        {canModifyPost(user, post) && (
+          <div className={styles.actions}>
+            <Link to={`/posts/${post.id}/edit`} className={styles.editButton}>
+              Edit story <span aria-hidden="true">→</span>
+            </Link>
 
-                <button
-                    type="button"
-                    className={styles.deleteButton}
-                    onClick={handleDelete}
-                    disabled={deleteMutation.isPending}
-                >
-                  {deleteMutation.isPending ? 'Deleting…' : 'Delete story'}
-                </button>
-              </div>
-          )}
-        </footer>
-
-        {deleteMutation.error && (
-            <p role="alert">
-              {deleteMutation.error instanceof ApiError &&
-              deleteMutation.error.status === 403
-                  ? 'You are not allowed to delete this post'
-                  : 'Could not delete the post, please try again'}
-            </p>
+            <button
+              type="button"
+              className={styles.deleteButton}
+              onClick={handleDelete}
+              disabled={deleteMutation.isPending}
+            >
+              {deleteMutation.isPending ? 'Deleting…' : 'Delete story'}
+            </button>
+          </div>
         )}
-      </article>
+      </footer>
+
+      {deleteMutation.error && (
+        <p role="alert">
+          {deleteMutation.error instanceof ApiError && deleteMutation.error.status === 403
+            ? 'You are not allowed to delete this story'
+            : 'Could not delete the story, please try again'}
+        </p>
+      )}
+    </article>
   )
 }

@@ -9,19 +9,18 @@ import './index.css'
 import '@fontsource-variable/literata'
 import '@fontsource-variable/instrument-sans'
 
-
 const savedTheme = localStorage.getItem('theme')
 
 if (savedTheme === 'light' || savedTheme === 'dark') {
-    document.documentElement.dataset.theme = savedTheme
+  document.documentElement.dataset.theme = savedTheme
 }
 
 createRoot(document.getElementById('root')!).render(
-    <StrictMode>
-        <QueryClientProvider client={queryClient}>
-            <AuthProvider>
-                <RouterProvider router={router} />
-            </AuthProvider>
-        </QueryClientProvider>
-    </StrictMode>,
+  <StrictMode>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+    </QueryClientProvider>
+  </StrictMode>,
 )

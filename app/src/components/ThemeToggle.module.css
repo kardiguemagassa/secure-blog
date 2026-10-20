@@ -1,28 +1,28 @@
 .toggle {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 
-    width: 2.75rem;
-    height: 2.75rem;
-    padding: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
 
-    border: 1px solid var(--rule);
-    border-radius: 50%;
+  border: 1px solid var(--rule);
+  border-radius: 50%;
 
-    background: var(--surface);
-    color: var(--ink);
+  background: var(--surface);
+  color: var(--ink);
 
-    font-size: 1.35rem;
-    cursor: pointer;
+  font-size: 1.35rem;
+  cursor: pointer;
 }
 
 .toggle:hover {
-    background: var(--rule);
-    color: var(--ink);
+  background: var(--rule);
+  color: var(--ink);
 }
 
 .toggle:focus-visible {
-    outline: 2px solid var(--accent);
-    outline-offset: 3px;
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
