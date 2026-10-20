@@ -1,4 +1,3 @@
-
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import { useNavigate } from 'react-router'
 import { createPost, postKeys } from '../api/posts'
@@ -19,27 +18,29 @@ export function NewPostPage() {
   })
 
   return (
-      <section className={styles.page}>
-        <div className={styles.heading}>
-          <p className={styles.eyebrow}>
-            <span className={styles.dot} aria-hidden="true" />
-            YOUR WRITING SPACE
-          </p>
+    <section className={styles.page}>
+      <div className={styles.heading}>
+        <p className={styles.eyebrow}>
+          <span className={styles.dot} aria-hidden="true" />
+          YOUR WRITING SPACE
+        </p>
 
-          <h1 className={styles.title}>Create a story<span>.</span></h1>
+        <h1 className={styles.title}>
+          Create a story<span>.</span>
+        </h1>
 
-          <p className={styles.description}>
-            Every great story begins with a thought. Share yours with the world.
-          </p>
-        </div>
+        <p className={styles.description}>
+          Every great story begins with a thought. Share yours with the world.
+        </p>
+      </div>
 
-        <div className={styles.card}>
-          <PostForm
-              submitLabel="Publish story"
-              cancelTo="/me/posts"
-              onSubmit={mutation.mutateAsync}
-          />
-        </div>
-      </section>
+      <div className={styles.card}>
+        <PostForm
+          submitLabel="Publish story"
+          cancelTo="/me/posts"
+          onSubmit={mutation.mutateAsync}
+        />
+      </div>
+    </section>
   )
 }
