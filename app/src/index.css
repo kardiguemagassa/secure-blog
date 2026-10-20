@@ -1,105 +1,217 @@
-/* ---------- Thème clair (par défaut) ---------- */
+/* ============ Jetons : thème clair ============ */
 :root {
   color-scheme: light;
-  --bg: #ffffff;
-  --surface: #f6f7f9;
-  --text: #1f2328;
-  --muted: #656d76;
-  --border: #d0d7de;
-  --primary: #2563eb;
-  --primary-text: #ffffff;
-  --danger: #cf222e;
 
-  font-family:
-    system-ui,
-    -apple-system,
-    'Segoe UI',
-    Roboto,
-    sans-serif;
+  --paper: #fbfbfd;
+  --surface: #f1f3f8;
+  --ink: #1b2333;
+  --muted: #5d6577;
+  --rule: #e1e5ec;
+
+  /* couleur de marque : fond des boutons, toujours avec un texte foncé */
+  --brand: #27d3f5;
+  --brand-hover: #12bfe3;
+  --brand-ink: #0b1f2a;
+
+  /* déclinaison lisible sur fond clair : liens, soulignements, focus */
+  --accent: #0779a1;
+  --accent-hover: #05607f;
+
+  --danger: #b93228;
+  --danger-ink: #ffffff;
+
+  --font-reading: 'Literata Variable', Georgia, serif;
+  --font-ui: 'Instrument Sans Variable', system-ui, sans-serif;
+
+  /* échelle typographique (rapport d'environ 1,25) */
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: 1.1875rem;
+  --text-xl: 1.5rem;
+  --text-2xl: 2rem;
+  --text-3xl: 2.75rem;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  --page-width: 87.5rem; /* 1400px */
+  --measure: 68ch;
+  --radius: 6px;
+
+  font-family: var(--font-ui);
   line-height: 1.5;
+  color: var(--ink);
+  background: var(--paper);
+  -webkit-font-smoothing: antialiased;
 }
 
-/* ---------- Thème sombre : suit le système, sauf si le clair est forcé ---------- */
+/* ============ Thème sombre : suit le système, sauf si le clair est forcé ============ */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
     color-scheme: dark;
-    --bg: #0d1117;
-    --surface: #161b22;
-    --text: #e6edf3;
-    --muted: #8d96a0;
-    --border: #30363d;
-    --primary: #4493f8;
-    --danger: #f85149;
+    --paper: #12161f;
+    --surface: #1a2030;
+    --ink: #e6e9f0;
+    --muted: #9aa3b5;
+    --rule: #2a3140;
+    --brand: #27d3f5;
+    --brand-hover: #6be2f8;
+    --brand-ink: #0b1f2a;
+    --accent: #27d3f5;
+    --accent-hover: #6be2f8;
+    --danger: #f0786e;
+    --danger-ink: #12161f;
   }
 }
 
-/* ---------- Thème sombre forcé ---------- */
+/* ============ Thème sombre forcé ============ */
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #0d1117;
-  --surface: #161b22;
-  --text: #e6edf3;
-  --muted: #8d96a0;
-  --border: #30363d;
-  --primary: #4493f8;
-  --danger: #f85149;
+  --paper: #12161f;
+  --surface: #1a2030;
+  --ink: #e6e9f0;
+  --muted: #9aa3b5;
+  --rule: #2a3140;
+  --brand: #27d3f5;
+  --brand-hover: #6be2f8;
+  --brand-ink: #0b1f2a;
+  --accent: #27d3f5;
+  --accent-hover: #6be2f8;
+  --danger: #f0786e;
+  --danger-ink: #12161f;
 }
 
-/* ---------- Base ---------- */
+/* ============ Base ============ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
-  background: var(--bg);
-  color: var(--text);
+}
+
+h1,
+h2,
+h3 {
+  margin: 0 0 var(--space-4);
+  font-family: var(--font-reading);
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  text-wrap: balance;
+}
+
+h1 {
+  font-size: var(--text-3xl);
+}
+
+h2 {
+  font-size: var(--text-xl);
+}
+
+p {
+  margin: 0 0 var(--space-4);
 }
 
 a {
-  color: var(--primary);
+  color: var(--accent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
 }
 
-header {
-  border-bottom: 1px solid var(--border);
+a:hover {
+  color: var(--accent-hover);
 }
 
-header nav,
-main {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 0.75rem 1rem;
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
 }
 
-header nav {
-  display: flex;
+/* ============ Boutons ============ */
+button,
+.button {
+  display: inline-flex;
   align-items: center;
-  gap: 1rem;
+  justify-content: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  background: var(--brand);
+  color: var(--brand-ink);
+  font: inherit;
+  font-weight: 550;
+  line-height: 1.4;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 0.15s;
 }
 
-main {
-  padding-block: 1.5rem;
+button:hover,
+.button:hover {
+  background: var(--brand-hover);
+  color: var(--brand-ink);
 }
 
-/* ---------- Formulaires ---------- */
+.button-secondary {
+  background: transparent;
+  border-color: var(--rule);
+  color: var(--ink);
+}
+
+.button-secondary:hover {
+  background: var(--surface);
+  color: var(--ink);
+}
+
+.button-danger {
+  background: var(--danger);
+  color: var(--danger-ink);
+}
+
+.button-danger:hover {
+  background: var(--danger);
+  color: var(--danger-ink);
+  filter: brightness(0.92);
+}
+
+button:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+/* ============ Formulaires ============ */
 form {
   display: grid;
-  gap: 1rem;
+  gap: var(--space-4);
   max-width: 360px;
 }
 
 label {
   display: block;
-  margin-bottom: 0.25rem;
-  font-weight: 500;
+  margin-bottom: var(--space-1);
+  font-weight: 550;
 }
 
 input,
 textarea,
 select {
-  box-sizing: border-box;
   width: 100%;
-  padding: 0.5rem 0.75rem;
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
   background: var(--surface);
-  color: var(--text);
+  color: var(--ink);
   font: inherit;
 }
 
@@ -108,33 +220,35 @@ textarea[aria-invalid='true'] {
   border-color: var(--danger);
 }
 
-button {
-  padding: 0.5rem 1rem;
-  border: 0;
-  border-radius: 6px;
-  background: var(--primary);
-  color: var(--primary-text);
-  font: inherit;
-  cursor: pointer;
-}
-
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
 [role='alert'] {
-  margin: 0.25rem 0 0;
+  margin: var(--space-1) 0 0;
   color: var(--danger);
-  font-size: 0.9rem;
+  font-size: var(--text-sm);
 }
 
+/* ============ Utilitaires ============ */
 [aria-busy='true'] {
   opacity: 0.6;
   transition: opacity 0.2s;
 }
 
-header nav a[aria-current='page'] {
-  font-weight: 600;
-  text-decoration: none;
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
 }

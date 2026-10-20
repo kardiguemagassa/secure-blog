@@ -1,3 +1,4 @@
+
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { adminKeys, changeUserRole, deleteUser, getUsers } from '../api/admin'
 import { ApiError } from '../api/client'
@@ -25,7 +26,8 @@ export function AdminUsersPage() {
   })
 
   const roleMutation = useMutation({
-    mutationFn: ({ id, role }: { id: string; role: Role }) => changeUserRole(id, role),
+    mutationFn: ({ id, role }: { id: string; role: Role }) =>
+        changeUserRole(id, role),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: adminKeys.all })
     },
@@ -35,7 +37,7 @@ export function AdminUsersPage() {
     mutationFn: (id: string) => deleteUser(id),
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: adminKeys.all })
-      void queryClient.invalidateQueries({ queryKey: postKeys.all }) // ses posts ont été supprimés avec lui
+      void queryClient.invalidateQueries({ queryKey: postKeys.all })
     },
   })
 
@@ -43,17 +45,23 @@ export function AdminUsersPage() {
     if (role === target.role) {
       return
     }
+
     const message =
-      role === 'ROLE_ADMIN'
-        ? `Give admin rights to ${target.username}?`
-        : `Remove admin rights from ${target.username}?`
+        role === 'ROLE_ADMIN'
+            ? `Give admin rights to ${target.username}?`
+            : `Remove admin rights from ${target.username}?`
+
     if (window.confirm(message)) {
       roleMutation.mutate({ id: target.id, role })
     }
   }
 
   function handleDelete(target: UserResponse) {
-    if (window.confirm(`Delete ${target.username} and all their posts? This cannot be undone.`)) {
+    const message =
+        `Delete ${target.username} and all their posts? ` +
+        'This cannot be undone.'
+
+    if (window.confirm(message)) {
       deleteMutation.mutate(target.id)
     }
   }
@@ -61,84 +69,174 @@ export function AdminUsersPage() {
   const mutationError = roleMutation.error ?? deleteMutation.error
 
   return (
-    <section>
-      <h1>Users</h1>
+      <main className={styles.page}>
+        <header className={styles.header}>
+          <div className={styles.headerContent}>
+            <p className={styles.eyebrow}>
+              <span className={styles.eyebrowDot} aria-hidden="true" />
+              Administration
+            </p>
 
-      {mutationError && <p role="alert">{adminErrorMessage(mutationError)}</p>}
-      {isPending && <p>Loading users…</p>}
-      {error && <p role="alert">Could not load users.</p>}
+            <h1 className={styles.title}>
+              Manage users<span className={styles.titleDot}>.</span>
+            </h1>
 
-      {data && (
-        <>
-          <div className={styles.tableWrapper}>
-            <table className={styles.table} aria-busy={isPlaceholderData}>
-              <thead>
-                <tr>
-                  <th scope="col">Username</th>
-                  <th scope="col">Email</th>
-                  <th scope="col">Role</th>
-                  <th scope="col">
-                    <span className={styles.visuallyHidden}>Actions</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {data.content.map((row) => {
-                  const isSelf = row.id === currentUser?.id
-                  const isBusy =
-                    (roleMutation.isPending && roleMutation.variables?.id === row.id) ||
-                    (deleteMutation.isPending && deleteMutation.variables === row.id)
-
-                  return (
-                    <tr key={row.id}>
-                      <td>
-                        {row.username}
-                        {isSelf && ' (you)'}
-                      </td>
-                      <td>{row.email}</td>
-                      <td>
-                        <select
-                          aria-label={`Role of ${row.username}`}
-                          value={row.role}
-                          disabled={isSelf || isBusy}
-                          onChange={(event) => handleRoleChange(row, event.target.value as Role)}
-                        >
-                          {Object.entries(ROLE_LABELS).map(([value, label]) => (
-                            <option key={value} value={value}>
-                              {label}
-                            </option>
-                          ))}
-                        </select>
-                      </td>
-                      <td>
-                        <button
-                          type="button"
-                          className={styles.danger}
-                          disabled={isSelf || isBusy}
-                          onClick={() => handleDelete(row)}
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  )
-                })}
-              </tbody>
-            </table>
+            <p className={styles.description}>
+              Manage your community and user permissions.
+            </p>
           </div>
-          <Pagination page={page} totalPages={data.page.totalPages} onPageChange={setPage} />
-        </>
-      )}
-    </section>
+
+          {data && (
+              <div className={styles.userCount}>
+                <strong>{data.page.totalElements}</strong>
+                <span>Users</span>
+              </div>
+          )}
+        </header>
+
+        {mutationError && (
+            <p role="alert">{adminErrorMessage(mutationError)}</p>
+        )}
+
+        {isPending && <p>Loading users…</p>}
+
+        {error && <p role="alert">Could not load users.</p>}
+
+        {data && (
+            <section aria-label="User management">
+              <div className={styles.tableWrapper}>
+                <table
+                    className={styles.table}
+                    aria-busy={isPlaceholderData}
+                >
+                  <thead>
+                  <tr>
+                    <th scope="col">Username</th>
+                    <th scope="col">Email</th>
+                    <th scope="col">Role</th>
+                    <th scope="col">
+                    <span className={styles.visuallyHidden}>
+                      Actions
+                    </span>
+                    </th>
+                  </tr>
+                  </thead>
+
+                  <tbody>
+                  {data.content.map((row) => {
+                    const isSelf = row.id === currentUser?.id
+
+                    const isBusy =
+                        (roleMutation.isPending &&
+                            roleMutation.variables?.id === row.id) ||
+                        (deleteMutation.isPending &&
+                            deleteMutation.variables === row.id)
+
+                    return (
+                        <tr key={row.id}>
+                          <td>
+                            <div className={styles.userCell}>
+                          <span
+                              className={styles.avatar}
+                              aria-hidden="true"
+                          >
+                            {row.username.charAt(0).toUpperCase()}
+                          </span>
+
+                              <div className={styles.userInfo}>
+                            <span className={styles.username}>
+                              {row.username}
+
+                              {isSelf && (
+                                  <span className={styles.selfLabel}>
+                                  {' '}(you)
+                                </span>
+                              )}
+                            </span>
+                              </div>
+                            </div>
+                          </td>
+
+                          <td className={styles.email} data-label="Email">
+                            {row.email}
+                          </td>
+
+                          <td data-label="Role">
+                            <select
+                                className={styles.roleSelect}
+                                aria-label={`Role of ${row.username}`}
+                                value={row.role}
+                                disabled={isSelf || isBusy}
+                                onChange={(event) =>
+                                    handleRoleChange(
+                                        row,
+                                        event.target.value as Role
+                                    )
+                                }
+                            >
+                              {Object.entries(ROLE_LABELS).map(
+                                  ([value, label]) => (
+                                      <option key={value} value={value}>
+                                        {label}
+                                      </option>
+                                  )
+                              )}
+                            </select>
+                          </td>
+
+                          <td className={styles.actionsCell}>
+                            <button
+                                type="button"
+                                className={styles.danger}
+                                disabled={isSelf || isBusy}
+                                onClick={() => handleDelete(row)}
+                            >
+                              Delete
+                            </button>
+                          </td>
+                        </tr>
+                    )
+                  })}
+
+                  {data.content.length === 0 && (
+                      <tr>
+                        <td colSpan={4} className={styles.empty}>
+                          No users found.
+                        </td>
+                      </tr>
+                  )}
+                  </tbody>
+                </table>
+              </div>
+
+              <Pagination
+                  page={page}
+                  totalPages={data.page.totalPages}
+                  onPageChange={setPage}
+              />
+            </section>
+        )}
+      </main>
   )
 }
 
 function adminErrorMessage(error: Error): string {
   if (error instanceof ApiError) {
-    if (error.status === 409)
-      return error.problem?.detail ?? 'This action is not allowed on your own account'
-    if (error.status === 403) return 'You no longer have admin rights. Please log in again.'
-    if (error.status === 404) return 'This user no longer exists'
+    if (error.status === 409) {
+      return (
+          error.problem?.detail ??
+          'This action is not allowed on your own account'
+      )
+    }
+
+    if (error.status === 403) {
+      return 'You no longer have admin rights. Please log in again.'
+    }
+
+    if (error.status === 404) {
+      return 'This user no longer exists'
+    }
   }
+
   return 'The action failed, please try again'
 }
