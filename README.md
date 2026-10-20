@@ -1,8 +1,8 @@
-# Secure Blog API
+# Secure Blog
 
-A REST API for a blog platform, secured with **Spring Security** and **JWT**. Users register, log in and manage their own posts; administrators can moderate any post and manage user accounts.
+A full-stack blog platform: a **Spring Boot** REST API secured with **Spring Security** and **JWT**, and a **React** frontend. Users register, log in and manage their own stories; administrators can moderate any story and manage user accounts.
 
-Built as a hands-on project to practice authentication, authorization and API hardening in a Spring Boot application.
+Built as a hands-on project to practice authentication, authorization and API hardening, end to end.
 
 ## Tech stack
 
@@ -16,6 +16,7 @@ Built as a hands-on project to practice authentication, authorization and API ha
 | Documentation | springdoc-openapi 3 / Swagger UI |
 | Tests | JUnit 5, Mockito, AssertJ, MockMvc, `@DataJpaTest` |
 | Build | Gradle |
+| Frontend | React 19, TypeScript, Vite (see [Frontend](#frontend)) |
 
 ## Features
 
@@ -32,6 +33,7 @@ Built as a hands-on project to practice authentication, authorization and API ha
 
 - Java 21
 - A running PostgreSQL instance
+- Node.js, in the version given by `.nvmrc` (for the frontend)
 
 ### Configuration
 
@@ -59,12 +61,26 @@ openssl rand -base64 32
 
 ### Run
 
+Start the API:
+
 ```bash
 cd api
 ./gradlew bootRun
 ```
 
 The API is available at `http://localhost:8080` and the documentation at `http://localhost:8080/swagger-ui.html`.
+
+Alternatively, put the variables in a `.env` file at the repository root (it is ignored by Git) and run `./run-api.sh`.
+
+Then start the frontend in another terminal:
+
+```bash
+cd app
+npm install
+npm run dev
+```
+
+The app is available at `http://localhost:5173`.
 
 ### Create the first administrator
 
@@ -132,6 +148,7 @@ In Swagger UI, use the **Authorize** button and paste the token without the `Bea
 **Authentication**
 - Stateless JWT signed with HS256; the decoder validates signature, expiration and issuer.
 - The `sub` claim holds the user's UUID: stable, and not personal data.
+- Tokens carry no personal data: only the user ID (`sub`), the role and a unique token ID (`jti`).
 - The role is carried in a `role` claim and mapped to Spring Security authorities.
 
 **Authorization**
@@ -151,6 +168,8 @@ In Swagger UI, use the **Authorize** button and paste the token without the `Bea
 
 ## Testing
 
+### Backend
+
 ```bash
 cd api
 ./gradlew test
@@ -164,8 +183,69 @@ cd api
 
 Controller tests cover the full authorization matrix (anonymous, owner, other user, admin) and token edge cases: expired, tampered signature, and valid token of a deleted user.
 
+### Frontend
+
+```bash
+cd app
+npm test
+```
+
+Vitest, Testing Library and jsdom. The tests cover the pure helpers (excerpt, permissions, pagination, server-side validation mapping) and the login form (validation, successful login, error messages, redirects).
+
+## Frontend
+
+React single-page application in `app/`, consuming the API.
+
+### Stack
+
+| Area | Technology |
+|---|---|
+| UI | React 19, TypeScript |
+| Build | Vite |
+| Routing | React Router 8 |
+| Server state | TanStack Query |
+| Forms | React Hook Form + Zod (rules mirror the backend DTOs) |
+| Styling | CSS Modules and design tokens (CSS custom properties), light and dark themes |
+| Fonts | Literata and Instrument Sans, self-hosted via `@fontsource` |
+| Quality | ESLint, Prettier |
+
+### How it reaches the API
+
+In development, the Vite dev server proxies every `/api` request to `http://localhost:8080`. The browser only talks to one origin, so no CORS configuration is needed. The code always calls relative paths (`/api/...`); in production, a reverse proxy plays the same role.
+
+### Scripts
+
+| Command | Purpose |
+|---|---|
+| `npm run dev` | Development server with hot reload |
+| `npm run build` | Type-check and production build |
+| `npm run lint` | ESLint |
+| `npm run format` / `npm run format:check` | Format with Prettier / check formatting |
+| `npm run preview` | Serve the production build locally |
+
+### Pages
+
+| Route | Access | Description |
+|---|---|---|
+| `/` | Public | Latest stories (paginated card grid) |
+| `/posts/:id` | Public | Story detail; edit and delete for the owner or an admin |
+| `/login`, `/register` | Public | Authentication |
+| `/posts/new`, `/posts/:id/edit` | Authenticated | Write and edit stories |
+| `/me`, `/me/posts` | Authenticated | Profile and own stories |
+| `/admin/users` | Admin | User list, role changes, account deletion |
+
+### Security notes
+
+- The current user is always loaded from `GET /api/users/me`; the frontend never trusts the JWT content.
+- A `401` received with a token logs the user out; the query cache is cleared on logout, so no data leaks to the next user of the browser.
+- Permission checks in the UI only hide controls; authorization is enforced by the API (`403` responses are handled and explained).
+- User content is rendered as text only (React escaping, no `dangerouslySetInnerHTML`).
+- Login shows the same message for an unknown email and a wrong password, consistent with the backend enumeration mitigation.
+- Fonts are bundled with the app: no third-party font requests.
+
 ## Known limitations
 
+- **Token storage.** The JWT is kept in `sessionStorage`, which scripts can read in case of XSS. Target design: an in-memory access token and a refresh token in an `httpOnly` cookie.
 - **Role changes are not immediate.** The role is stored in the JWT, so a demoted user keeps their previous rights until the token expires (60 minutes by default). Possible mitigations: shorter-lived access tokens with refresh tokens, reading the role from the database on each request, or a token revocation list.
 - **No refresh token.** Users log in again when the token expires.
 - **Errors raised by the security filter chain** (missing or invalid token) return an empty body with a standard `WWW-Authenticate` header, rather than a `ProblemDetail` body.
@@ -182,12 +262,21 @@ api/src/main/java/com/kmgtechnologies/secureblog
 ├── repository  # Spring Data repositories
 ├── security    # JWT generation, ownership checks, current user helper
 └── service     # Business logic
+
+app/src
+├── api         # Typed API client and one module per resource
+├── auth        # Token storage, auth context, protected routes
+├── components  # Layout, cards, forms, pagination, theme toggle
+├── hooks       # Reusable hooks (page number in the URL)
+├── lib         # Query client, formatting, permissions, form errors
+├── pages       # One component per route
+└── types       # TypeScript mirrors of the backend DTOs
 ```
 
 ## Git workflow
 
 - `main`: stable releases
 - `dev`: integration branch
-- `feature/*`, `docs/*`: one branch per change, merged into `dev` through a pull request
+- `feature/*`, `fix/*`, `refactor/*`, `docs/*`: one branch per change, merged into `dev` through a pull request
 
 Commits follow [Conventional Commits](https://www.conventionalcommits.org/).

@@ -1,0 +1,39 @@
+.footer {
+  border-top: 1px solid var(--rule);
+  color: var(--muted);
+  font-size: var(--text-sm);
+}
+
+.inner {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-6);
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: var(--space-6);
+}
+
+.about {
+  flex: 1 1 24rem;
+  margin: 0;
+}
+
+.name {
+  color: var(--ink);
+  font-family: var(--font-reading);
+  font-weight: 600;
+}
+
+.links a {
+  color: var(--muted);
+}
+
+.links a:hover {
+  color: var(--ink);
+}
+
+.copyright {
+  margin: 0;
+}

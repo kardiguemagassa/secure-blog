@@ -41,7 +41,7 @@ class PostServiceTest {
     @Test
     void shouldCreatePostWithAuthenticatedAuthor() {
         when(userRepository.findById(authorId)).thenReturn(Optional.of(alice));
-        when(postRepository.save(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
+        when(postRepository.saveAndFlush(any(Post.class))).thenAnswer(inv -> inv.getArgument(0));
 
         PostResponse response = postService.create(new PostRequest("  Titre  ", "Contenu"), authorId);
 
@@ -57,7 +57,7 @@ class PostServiceTest {
                 () -> postService.create(new PostRequest("Titre", "Contenu"), authorId));
 
         assertEquals(HttpStatus.UNAUTHORIZED, ex.getStatusCode());
-        verify(postRepository, never()).save(any());
+        verify(postRepository, never()).saveAndFlush(any());
     }
 
     @Test
