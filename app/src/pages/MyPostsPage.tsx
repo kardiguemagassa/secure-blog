@@ -30,7 +30,7 @@ export function MyPostsPage() {
 
         <Link to="/posts/new" className={styles.createButton}>
           Write a story
-          <span aria-hidden="true">↗</span>
+          <span aria-hidden="true">→</span>
         </Link>
       </header>
 
@@ -39,7 +39,7 @@ export function MyPostsPage() {
           query={query}
           page={page}
           onPageChange={setPage}
-          emptyMessage="You have not written any posts yet."
+          emptyMessage="You have not written any stories yet."
         />
       </section>
     </main>

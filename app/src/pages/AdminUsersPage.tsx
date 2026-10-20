@@ -55,7 +55,7 @@ export function AdminUsersPage() {
   }
 
   function handleDelete(target: UserResponse) {
-    const message = `Delete ${target.username} and all their posts? ` + 'This cannot be undone.'
+    const message = `Delete ${target.username} and all their stories? ` + 'This cannot be undone.'
 
     if (window.confirm(message)) {
       deleteMutation.mutate(target.id)

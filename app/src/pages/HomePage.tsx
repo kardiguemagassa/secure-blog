@@ -38,11 +38,11 @@ export function HomePage() {
             <div className={styles.actions}>
               {isAuthenticated ? (
                 <Link to="/posts/new" className={styles.primaryButton}>
-                  Write a story <span aria-hidden="true">↗</span>
+                  Write a story <span aria-hidden="true">→</span>
                 </Link>
               ) : (
                 <Link to="/register" className={styles.primaryButton}>
-                  Start writing <span aria-hidden="true">↗</span>
+                  Start writing <span aria-hidden="true">→</span>
                 </Link>
               )}
 

@@ -33,7 +33,7 @@ export function PostPage() {
   })
 
   function handleDelete() {
-    if (window.confirm('Delete this post? This cannot be undone.')) {
+    if (window.confirm('Delete this story? This cannot be undone.')) {
       deleteMutation.mutate()
     }
   }
@@ -47,8 +47,8 @@ export function PostPage() {
 
     return (
       <section>
-        <h1>{notFound ? 'Post not found' : 'Something went wrong'}</h1>
-        <Link to="/">Back to posts</Link>
+        <h1>{notFound ? 'Story not found' : 'Something went wrong'}</h1>
+        <Link to="/">Back to stories</Link>
       </section>
     )
   }
@@ -94,7 +94,7 @@ export function PostPage() {
         {canModifyPost(user, post) && (
           <div className={styles.actions}>
             <Link to={`/posts/${post.id}/edit`} className={styles.editButton}>
-              Edit story <span aria-hidden="true">↗</span>
+              Edit story <span aria-hidden="true">→</span>
             </Link>
 
             <button
@@ -112,8 +112,8 @@ export function PostPage() {
       {deleteMutation.error && (
         <p role="alert">
           {deleteMutation.error instanceof ApiError && deleteMutation.error.status === 403
-            ? 'You are not allowed to delete this post'
-            : 'Could not delete the post, please try again'}
+            ? 'You are not allowed to delete this story'
+            : 'Could not delete the story, please try again'}
         </p>
       )}
     </article>

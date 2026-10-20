@@ -25,7 +25,7 @@ export function NotFoundPage() {
 
         <Link to="/" className={styles.homeButton}>
           Back to home
-          <span aria-hidden="true">↗</span>
+          <span aria-hidden="true">→</span>
         </Link>
 
         <p className={styles.footer}>Every great story starts somewhere.</p>

@@ -55,13 +55,13 @@ export function Layout() {
             className={`${styles.nav} ${menuOpen ? styles.navOpen : ''}`}
           >
             <NavLink to="/" end onClick={closeMenu}>
-              Posts
+              Stories
             </NavLink>
 
             {isAuthenticated ? (
               <>
                 <NavLink to="/me/posts" onClick={closeMenu}>
-                  My posts
+                  My stories
                 </NavLink>
 
                 {isAdmin && (
@@ -75,7 +75,7 @@ export function Layout() {
                 </NavLink>
 
                 <Link to="/posts/new" className="button" onClick={closeMenu}>
-                  New post
+                  Write a story
                 </Link>
 
                 <button type="button" className="button-secondary" onClick={handleLogout}>

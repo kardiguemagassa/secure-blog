@@ -38,8 +38,8 @@ export function EditPostPage() {
   if (error) {
     return (
       <section>
-        <h1>Post not found</h1>
-        <Link to="/">Back to posts</Link>
+        <h1>Story not found</h1>
+        <Link to="/">Back to stories</Link>
       </section>
     )
   }
@@ -48,8 +48,8 @@ export function EditPostPage() {
     return (
       <section>
         <h1>Not allowed</h1>
-        <p>You can only edit your own posts.</p>
-        <Link to={`/posts/${post.id}`}>Back to the post</Link>
+        <p>You can only edit your own stories.</p>
+        <Link to={`/posts/${post.id}`}>Back to the story</Link>
       </section>
     )
   }

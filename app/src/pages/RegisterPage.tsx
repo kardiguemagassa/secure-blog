@@ -145,7 +145,7 @@ export function RegisterPage() {
 
             <button className={styles.submitButton} type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'Creating account…' : 'Create account'}
-              {!isSubmitting && <span aria-hidden="true">↗</span>}
+              {!isSubmitting && <span aria-hidden="true">→</span>}
             </button>
           </form>
 

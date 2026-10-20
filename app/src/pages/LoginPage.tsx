@@ -89,7 +89,7 @@ export function LoginPage() {
 
             <button className={styles.submitButton} type="submit" disabled={isSubmitting}>
               {isSubmitting ? 'Logging in…' : 'Log in'}
-              {!isSubmitting && <span aria-hidden="true">↗</span>}
+              {!isSubmitting && <span aria-hidden="true">→</span>}
             </button>
           </form>
 

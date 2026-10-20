@@ -15,11 +15,11 @@ export function PostList({ query, page, onPageChange, emptyMessage }: PostListPr
   const { data, error, isPending, isPlaceholderData } = query
 
   if (isPending) {
-    return <p>Loading posts…</p>
+    return <p>Loading stories…</p>
   }
 
   if (error) {
-    return <p role="alert">Could not load posts. Please try again later.</p>
+    return <p role="alert">Could not load stories. Please try again later.</p>
   }
 
   if (data.content.length === 0) {

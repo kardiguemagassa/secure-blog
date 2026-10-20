@@ -25,9 +25,9 @@ export function PostCard({ post }: PostCardProps) {
           <span className={styles.avatar} aria-hidden="true">
             {post.authorUsername.charAt(0).toUpperCase()}
           </span>
-            {post.authorUsername}
+          {post.authorUsername}
         </span>
-            <span className={styles.readLink} aria-hidden="true">
+        <span className={styles.readLink} aria-hidden="true">
           Read story →
         </span>
       </div>

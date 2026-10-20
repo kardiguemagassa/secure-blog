@@ -78,8 +78,8 @@ export function PostForm({ defaultValues, submitLabel, cancelTo, onSubmit }: Pos
 
 function errorMessage(error: unknown): string {
   if (error instanceof ApiError) {
-    if (error.status === 403) return 'You are not allowed to modify this post'
-    if (error.status === 404) return 'This post no longer exists'
+    if (error.status === 403) return 'You are not allowed to modify this story'
+    if (error.status === 404) return 'This story no longer exists'
   }
-  return 'Could not save the post, please try again'
+  return 'Could not save the story, please try again'
 }
